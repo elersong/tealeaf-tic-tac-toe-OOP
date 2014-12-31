@@ -15,15 +15,16 @@ require 'pry'
 
 # ====================== Method Definitions
 
-def collect_and_validate_input(msg, type) # <= String, Symbol
+def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
   input = prompt msg
   
   if valid?(input, type)
     return input.upcase
   else
     system("clear")
+    print_ttt_board prev_plays
     puts "INVALID INPUT: Please try again"
-    input = collect_and_validate_input msg, type
+    input = collect_and_validate_input msg, type, prev_plays
   end
 end # => String
 
@@ -35,27 +36,32 @@ def valid?(input, type) # <= String, Symbol
   end
 end # => Boolean
 
-def display_header # <= nil
-  system("clear")
-  puts "Let's Play Tic Tac Toe!"
-  puts "-----------------------"
-end # => nil
+def game_over?(arr) # <= Array
+  arr.each do |x|
+      return false if %w(A B C D E F G H I).include? x
+  end
+  true
+end
 
-def get_indices(arr, el) # <= Array, String
+def get_playable_indices(arr) # <= Array, String
   indices = []
   arr.each_with_index do |item, index|
-      indices << index if item == el
+      indices << index if (item != "X" && item != "O")
   end
   indices
 end # => Array
 
 def play_by_computer(plays) # <= Array 
-  index_of_comp_play = get_indices(plays,"n").sample
+  index_of_comp_play = get_playable_indices(plays).sample
   plays[index_of_comp_play] = "O"
   plays
 end # => Array
 
-def print_ttt(arr) # <= Array
+def print_ttt_board(arr) # <= Array
+  system("clear")
+  puts "Let's Play Tic Tac Toe!"
+  puts "-----------------------"
+  puts ""
   puts "     |     |     "
   puts "  #{arr[0]}  |  #{arr[1]}  |  #{arr[2]}  "
   puts "     |     |     "
@@ -74,7 +80,7 @@ def prompt(msg) # <= String
   gets.chomp
 end # => String
 
-def update_game_plays(arr, player_choice) # <= Array
+def update_game_plays(arr, player_choice) # <= Array, String
   here = arr.index(player_choice)
   arr[here] = "X"
   arr
@@ -85,15 +91,33 @@ end # => Array
 
 game_plays = %w(A B C D E F G H I)
 
-display_header
-puts "You have X and the computer has O\n\n"
-print_ttt game_plays
+print_ttt_board game_plays
 
 if rand(2) == 1
-  # computer wins coinflip and plays first
+  # The computer wins the coinflip and plays first
   game_plays = play_by_computer game_plays
+  print_ttt_board game_plays
+  players_turn = true
 else
-  # player plays first
-  player_choice = collect_and_validate_input "Choose a Place to Play Your X", :play
+  puts "\nYou won the coinflip and get to play first!"
+  puts "\nYou have X and the computer has O\n\n"
+  player_choice = collect_and_validate_input "Choose a Place to Play Your X", :play, game_plays
   game_plays = update_game_plays game_plays, player_choice
+  print_ttt_board game_plays
+  players_turn = false
 end
+
+while !game_over? game_plays do
+  if players_turn
+    player_choice = collect_and_validate_input "Choose a Place to Play Your X", :play, game_plays
+    game_plays = update_game_plays game_plays, player_choice
+    print_ttt_board game_plays
+    players_turn = false
+  else
+    game_plays = play_by_computer game_plays
+    print_ttt_board game_plays
+    players_turn = true
+  end
+end 
+  
+puts "Thanks for Playing!" if game_over? game_plays

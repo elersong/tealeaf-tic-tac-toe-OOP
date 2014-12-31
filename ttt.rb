@@ -98,6 +98,23 @@ def print_ttt_board(arr) # <= Array
 end # => nil
 
 def play_game # <= nil
+  
+end # => nil
+
+def prompt(msg) # <= String
+  puts " => #{msg}"
+  gets.chomp
+end # => String
+
+def update_game_plays(arr, player_choice) # <= Array, String
+  here = arr.index(player_choice)
+  arr[here] = "X"
+  arr
+end # => Array
+
+# ====================== Main Method
+
+begin
   game_plays = %w(A B C D E F G H I)
   
   print_ttt_board game_plays
@@ -122,7 +139,7 @@ def play_game # <= nil
       game_plays = update_game_plays game_plays, player_choice
       print_ttt_board game_plays
       if did_he_win? game_plays, "The Computer"
-        puts "YOU WON!!"
+        puts " => YOU WON!!"
         break
       end
       players_turn = false
@@ -130,7 +147,7 @@ def play_game # <= nil
       game_plays = play_by_computer game_plays
       print_ttt_board game_plays
       if did_he_win? game_plays, "You"
-        puts "Oh no! The computer wins!"
+        puts " => Oh no! The computer wins!"
         break
       end
       players_turn = true
@@ -138,20 +155,4 @@ def play_game # <= nil
   end 
   
   puts "Thanks for Playing!" if game_over? game_plays
-  play_game if again?
-end # => nil
-
-def prompt(msg) # <= String
-  puts " => #{msg}"
-  gets.chomp
-end # => String
-
-def update_game_plays(arr, player_choice) # <= Array, String
-  here = arr.index(player_choice)
-  arr[here] = "X"
-  arr
-end # => Array
-
-# ====================== Main Method
-
-play_game
+end until !again?

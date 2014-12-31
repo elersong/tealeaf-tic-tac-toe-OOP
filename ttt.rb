@@ -15,6 +15,26 @@ require 'pry'
 
 # ====================== Method Definitions
 
+def collect_and_validate_input(msg, type) # <= String, Symbol
+  input = prompt msg
+  
+  if valid?(input, type)
+    return input.upcase
+  else
+    system("clear")
+    puts "INVALID INPUT: Please try again"
+    input = collect_and_validate_input msg, type
+  end
+end # => String
+
+def valid?(input, type) # <= String, Symbol
+  if type == :play
+    !(input !~ /[ABCDEFGHIabcdefghi]/) && input.length == 1
+  elsif type == :again
+    !(input !~ /[YNyn]/)
+  end
+end # => Boolean
+
 def display_header # <= nil
   system("clear")
   puts "Let's Play Tic Tac Toe!"
@@ -52,20 +72,28 @@ end # => nil
 def prompt(msg) # <= String
   puts " => #{msg}"
   gets.chomp
-end # => nil
+end # => String
+
+def update_game_plays(arr, player_choice) # <= Array
+  here = arr.index(player_choice)
+  arr[here] = "X"
+  arr
+end # => Array
 
 
 # ====================== Game Logic
 
+game_plays = %w(A B C D E F G H I)
+
 display_header
 puts "You have X and the computer has O\n\n"
-print_ttt [1,2,3,4,5,6,7,8,9]
-
-game_plays = %w(n n n n n n n n n)
+print_ttt game_plays
 
 if rand(2) == 1
-  # computer plays first
+  # computer wins coinflip and plays first
   game_plays = play_by_computer game_plays
 else
-  # User plays first
+  # player plays first
+  player_choice = collect_and_validate_input "Choose a Place to Play Your X", :play
+  game_plays = update_game_plays game_plays, player_choice
 end

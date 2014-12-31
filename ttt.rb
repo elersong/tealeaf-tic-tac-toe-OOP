@@ -3,10 +3,10 @@ require 'pry'
 # ====================== Pseudocode Algorithm
 
 # 1. Inform user that he is X's and the computer is O's
-# 2. Load sample gameboard with box numbers.
+# 2. Load sample gameboard with box IDs.
 # 3. Coinflip to see which plays first. Inform user.
-# 4. Load the gameboard and prompt user for the number of their next play.
-# 5. Repeat alternating user/computer turns until board is full.
+# 4. Load the gameboard and prompt user for the letter of their next play.
+# 5. Repeat alternating user/computer turns until board is full, checking for winner after each turn.
 # 6. Check board to see if winning conditions or tie conditions. Display winner.
 #     => If indices [012,345,678,036,147,258,048,246] then winner
 #     => If none, then tie
@@ -15,10 +15,10 @@ require 'pry'
 
 # ====================== Method Definitions
 
-def again?
+def again? # <= nil
   yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(x x x o o o x x x))
   yes_or_no == "Y" ? true : false
-end
+end # => Boolean
 
 def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
   input = prompt msg
@@ -47,7 +47,7 @@ def did_he_win?(arr, player) # <= Array, String
     puts "It's a TIE!"
     false
   end
-end
+end # => Boolean
 
 def valid?(input, type) # <= String, Symbol
   if type == :play
@@ -97,7 +97,7 @@ def print_ttt_board(arr) # <= Array
   puts ""
 end # => nil
 
-def play_game
+def play_game # <= nil
   game_plays = %w(A B C D E F G H I)
   
   print_ttt_board game_plays
@@ -139,7 +139,7 @@ def play_game
   
   puts "Thanks for Playing!" if game_over? game_plays
   play_game if again?
-end
+end # => nil
 
 def prompt(msg) # <= String
   puts " => #{msg}"
@@ -152,6 +152,6 @@ def update_game_plays(arr, player_choice) # <= Array, String
   arr
 end # => Array
 
-
 # ====================== Main Method
+
 play_game

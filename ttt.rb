@@ -1,0 +1,4 @@
+require 'pry'
+
+# Pseudocode Algorithm
+# ---------------------

@@ -97,10 +97,6 @@ def print_ttt_board(arr) # <= Array
   puts ""
 end # => nil
 
-def play_game # <= nil
-  
-end # => nil
-
 def prompt(msg) # <= String
   puts " => #{msg}"
   gets.chomp

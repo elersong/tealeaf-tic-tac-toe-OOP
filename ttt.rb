@@ -108,7 +108,7 @@ def update_game_plays(arr, player_choice) # <= Array, String
   arr
 end # => Array
 
-# ====================== Main Method
+# ====================== Game Logic
 
 begin
   game_plays = %w(A B C D E F G H I)

@@ -113,49 +113,54 @@ end # => Array
 
 def play_by_computer(plays) # <= Array 
   # look for a quick win first
-  index_to_win = ai_choose_play_index plays
-  binding.pry
+  index_to_win = ai_choose_play_index plays, "O"
   
-  if index_to_win.nil?
+  # look for ways the opponent can win
+  index_to_block = ai_choose_play_index plays, "X"
+  
+  if index_to_win.nil? && index_to_block.nil?
     index_of_comp_play = get_playable_indices(plays).sample
     plays[index_of_comp_play] = "O"
     return plays
+  elsif index_to_win.nil?
+    plays[index_to_block] = "O"
+    return plays
+  else
+    plays[index_to_win] = "O"
+    plays
   end
-  
-  plays[index_to_win] = "O"
-  plays
 end # => Array
 
-def ai_choose_play_index(arr) # <= Array
+def ai_choose_play_index(arr, cursor) # <= Array
   # horizontals
   hor = [[0,1,2], [3,4,5], [6,7,8]]
   hor.each do |group|
-    found = find_third_index group, arr
+    found = find_third_index group, arr, cursor
     return found if found != nil
   end
     
   # verticals
   ver = [[0,3,6], [1,4,7], [2,5,8]]
   ver.each do |group|
-    found = find_third_index group, arr
+    found = find_third_index group, arr, cursor
     return found if found != nil
   end
   
   # diagonals
   dia = [[0,4,8], [2,4,6]]
   dia.each do |group|
-    found = find_third_index group, arr
+    found = find_third_index group, arr, cursor
     return found if found != nil
   end
   
   nil
 end # => Integer or nil
 
-def find_third_index(group_arr, plays_arr) # <= Array
+def find_third_index(group_arr, plays_arr, cursor) # <= Array
   available_index = []
   two_os = []
   group_arr.each do |index|
-    if plays_arr[index] == "O"
+    if plays_arr[index] == cursor
       two_os << index
     elsif %w(A B C D E F G H I).include? plays_arr[index]
       available_index << index

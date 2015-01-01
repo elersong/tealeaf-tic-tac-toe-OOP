@@ -95,7 +95,7 @@ end # => Array
 def ai_choose_play_index(arr, cursor) # <= Array
   order = ["D", "H", "V"].shuffle
 
-  order.each do |operation| # shuffle the hierarchy of how the AI thinks. more like playing a human.
+  order.each do |operation| # shuffle the hierarchy of how the AI thinks. more like playing a human... but a jedi human.
     case operation
       when "D"
         # diagonals

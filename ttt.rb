@@ -17,7 +17,7 @@ require 'pry'
 
 def again? # <= nil
   yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
-  yes_or_no == "Y" ? true : false
+  yes_or_no == "Y"
 end # => Boolean
 
 def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
@@ -79,16 +79,16 @@ def play_by_computer(plays) # <= Array
   # look for ways the opponent can win
   index_to_block = ai_choose_play_index plays, "X"
   
-  if index_to_win.nil? && index_to_block.nil?
-    index_of_comp_play = get_playable_indices(plays).sample
-    plays[index_of_comp_play] = "O"
-    return plays
-  elsif index_to_win.nil?
-    plays[index_to_block] = "O"
-    return plays
+  if index_to_win
+     plays[index_to_win] = "O"
+     return plays
+  elsif index_to_block
+     plays[index_to_block] = "O"
+     plays
   else
-    plays[index_to_win] = "O"
-    plays
+     index_of_comp_play = get_playable_indices(plays).sample
+     plays[index_of_comp_play] = "O"
+     return plays
   end
 end # => Array
 
@@ -211,5 +211,5 @@ begin
     end
   end 
   
-end until !again?
+end while again?
 puts "Thanks for Playing!"

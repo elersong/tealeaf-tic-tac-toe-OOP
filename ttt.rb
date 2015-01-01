@@ -132,6 +132,13 @@ def play_by_computer(plays) # <= Array
 end # => Array
 
 def ai_choose_play_index(arr, cursor) # <= Array
+  # diagonals
+  dia = [[0,4,8], [2,4,6]]
+  dia.each do |group|
+    found = find_third_index group, arr, cursor
+    return found if found != nil
+  end
+
   # horizontals
   hor = [[0,1,2], [3,4,5], [6,7,8]]
   hor.each do |group|
@@ -142,13 +149,6 @@ def ai_choose_play_index(arr, cursor) # <= Array
   # verticals
   ver = [[0,3,6], [1,4,7], [2,5,8]]
   ver.each do |group|
-    found = find_third_index group, arr, cursor
-    return found if found != nil
-  end
-  
-  # diagonals
-  dia = [[0,4,8], [2,4,6]]
-  dia.each do |group|
     found = find_third_index group, arr, cursor
     return found if found != nil
   end

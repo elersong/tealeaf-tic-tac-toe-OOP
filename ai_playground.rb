@@ -18,6 +18,7 @@ def ai_choose_play_index(arr) # <= Array
     # diagonals
     dia = [[0,4,8], [2,4,6]]
     dia.each do |group|
+      binding.pry
         found = find_third_index group, arr
         return found if found != nil
     end
@@ -29,12 +30,14 @@ def find_third_index(group_arr, plays_arr) # <= Array
     available_index = []
     two_os = []
     group_arr.each do |index|
+      binding.pry
         if plays_arr[index] == "X"
             two_os << index
         elsif %w(A B C D E F G H I).include? plays_arr[index]
             available_index << index
         end
     end
+    binding.pry
     if two_os.count == 2 && available_index.count == 1
         return available_index[0]
     end

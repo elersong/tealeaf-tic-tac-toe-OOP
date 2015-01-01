@@ -51,7 +51,7 @@ end # => Boolean
 
 def valid?(input, type) # <= String, Symbol
   if type == :play
-    input =~ /[ABCDEFGHIabcdefghi]/ && input.length == 1
+    input =~ /[123456789]/ && input.length == 1
   elsif type == :again
     input =~ /[YNyn]/
   end
@@ -59,7 +59,7 @@ end # => Boolean
 
 def game_over?(arr) # <= Array
   arr.each do |x|
-      return false if %w(A B C D E F G H I).include? x
+      return false if %w(1 2 3 4 5 6 7 8 9).include? x
   end
   true
 end # => Boolean
@@ -129,7 +129,7 @@ def find_third_index(group_arr, plays_arr, cursor) # <= Array
   group_arr.each do |index|
     if plays_arr[index] == cursor
       two_os << index
-    elsif %w(A B C D E F G H I).include? plays_arr[index]
+    elsif %w(1 2 3 4 5 6 7 8 9).include? plays_arr[index]
       available_index << index
     end
   end
@@ -172,7 +172,7 @@ end # => Array
 # ====================== Game Logic
 
 begin
-  game_plays = %w(A B C D E F G H I)
+  game_plays = %w(1 2 3 4 5 6 7 8 9)
   
   print_ttt_board game_plays
   

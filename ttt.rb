@@ -51,9 +51,9 @@ end # => Boolean
 
 def valid?(input, type) # <= String, Symbol
   if type == :play
-    !(input !~ /[ABCDEFGHIabcdefghi]/) && input.length == 1
+    input =~ /[ABCDEFGHIabcdefghi]/ && input.length == 1
   elsif type == :again
-    !(input !~ /[YNyn]/)
+    input =~ /[YNyn]/
   end
 end # => Boolean
 

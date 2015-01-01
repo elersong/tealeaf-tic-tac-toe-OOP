@@ -16,7 +16,7 @@ require 'pry'
 # ====================== Method Definitions
 
 def again? # <= nil
-  yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, [])
+  yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
   yes_or_no == "Y" ? true : false
 end # => Boolean
 

@@ -1,175 +1,193 @@
 require 'pry'
 
-# ====================== Pseudocode Algorithm
+# ============================================================================== Pseudocode Algorithm
 
 # 1. Inform user that he is X's and the computer is O's
 # 2. Load sample gameboard with box IDs.
 # 3. Coinflip to see which plays first. Inform user.
 # 4. Load the gameboard and prompt user for the letter of their next play.
-# 5. Repeat alternating user/computer turns until board is full, checking for winner after each turn.
+# 5. Repeat alternating user/computer turns until board is full, checking for
+#    winner after each turn.
 # 6. Check board to see if winning conditions or tie conditions. Display winner.
 #     => If indices [012,345,678,036,147,258,048,246] then winner
 #     => If none, then tie
 # 7. Ask user if play again or no. Exit if no.
 
 
-# ====================== Method Definitions
+# ============================================================================== Class Definitions
 
-def again? # <= nil
-  yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
-  yes_or_no == "Y"
-end # => Boolean
-
-def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
-  input = prompt msg
+class Board
   
-  if valid?(input, type)
-    return input.upcase
-  else
+  @game_plays = %w(1 2 3 4 5 6 7 8 9)
+  
+  def print_ttt_board(arr) # <= Array
     system("clear")
-    print_ttt_board prev_plays
-    puts "INVALID INPUT: Please try again"
-    input = collect_and_validate_input msg, type, prev_plays
-  end
-end # => String
+    puts "Let's Play Tic Tac Toe!"
+    puts "-----------------------"
+    puts ""
+    puts "     |     |     "
+    puts "  #{arr[0]}  |  #{arr[1]}  |  #{arr[2]}  "
+    puts "     |     |     "
+    puts "-----+-----+-----"
+    puts "     |     |     "
+    puts "  #{arr[3]}  |  #{arr[4]}  |  #{arr[5]}  "
+    puts "     |     |     "
+    puts "-----+-----+-----"
+    puts "     |     |     "
+    puts "  #{arr[6]}  |  #{arr[7]}  |  #{arr[8]}  "
+    puts "     |     |     "
+    puts ""
+  end # => nil
+  
+  
+  def update_game_plays(arr, player_choice) # <= Array, String
+    here = arr.index(player_choice)
+    arr[here] = "X"
+    arr
+  end # => Array
+  
+end
 
-def did_he_win?(arr, player) # <= Array, String
-  if (arr[0] == arr[1] && arr[1] == arr[2] ||
-      arr[3] == arr[4] && arr[4] == arr[5] ||
-      arr[6] == arr[7] && arr[7] == arr[8] ||
-      arr[0] == arr[3] && arr[3] == arr[6] ||
-      arr[1] == arr[4] && arr[4] == arr[7] ||
-      arr[2] == arr[5] && arr[5] == arr[8] ||
-      arr[0] == arr[4] && arr[4] == arr[8] ||
-      arr[2] == arr[4] && arr[4] == arr[6])
+class AI
+  
+  def get_playable_indices(arr) # <= Array, String
+    indices = []
+    arr.each_with_index do |item, index|
+        indices << index if (item != "X" && item != "O")
+    end
+    indices
+  end # => Array
+  
+  def play_by_computer(plays) # <= Array 
+    # look for a quick win first
+    index_to_win = ai_choose_play_index plays, "O"
+    
+    # look for ways the opponent can win
+    index_to_block = ai_choose_play_index plays, "X"
+    
+    if index_to_win
+       plays[index_to_win] = "O"
+       return plays
+    elsif index_to_block
+       plays[index_to_block] = "O"
+       plays
+    else
+       index_of_comp_play = get_playable_indices(plays).sample
+       plays[index_of_comp_play] = "O"
+       return plays
+    end
+  end # => Array
+  
+  def ai_choose_play_index(arr, cursor) # <= Array
+    order = ["D", "H", "V"].shuffle
+  
+    order.each do |operation| # shuffle the hierarchy of how the AI thinks. more like playing a human... but a jedi human.
+      case operation
+        when "D"
+          # diagonals
+          dia = [[0,4,8], [2,4,6]]
+          dia.each do |group|
+            found = find_third_index group, arr, cursor
+            return found if found != nil
+          end
+        when "H"
+          # horizontals
+          hor = [[0,1,2], [3,4,5], [6,7,8]]
+          hor.each do |group|
+            found = find_third_index group, arr, cursor
+            return found if found != nil
+          end
+        when "V"
+          # verticals
+          ver = [[0,3,6], [1,4,7], [2,5,8]]
+          ver.each do |group|
+            found = find_third_index group, arr, cursor
+            return found if found != nil
+          end
+      end
+    end
+    nil
+  end # => Integer or nil
+  
+  def find_third_index(group_arr, plays_arr, cursor) # <= Array
+    available_index = []
+    two_os = []
+    group_arr.each do |index|
+      if plays_arr[index] == cursor
+        two_os << index
+      elsif %w(1 2 3 4 5 6 7 8 9).include? plays_arr[index]
+        available_index << index
+      end
+    end
+    if two_os.count == 2 && available_index.count == 1
+      return available_index[0]
+    end
+    nil
+  end # => Integer or nil
+end
+
+class GameEngine
+  
+  def game_over?(arr) # <= Array
+    arr.each do |x|
+        return false if %w(1 2 3 4 5 6 7 8 9).include? x
+    end
     true
-  elsif game_over? arr
-    puts "It's a TIE!"
-    false
-  end
-end # => Boolean
+  end # => Boolean
+end
 
-def valid?(input, type) # <= String, Symbol
-  if type == :play
-    input =~ /[123456789]/ && input.length == 1
-  elsif type == :again
-    input =~ /[YNyn]/
-  end
-end # => Boolean
-
-def game_over?(arr) # <= Array
-  arr.each do |x|
-      return false if %w(1 2 3 4 5 6 7 8 9).include? x
-  end
-  true
-end # => Boolean
-
-def get_playable_indices(arr) # <= Array, String
-  indices = []
-  arr.each_with_index do |item, index|
-      indices << index if (item != "X" && item != "O")
-  end
-  indices
-end # => Array
-
-def play_by_computer(plays) # <= Array 
-  # look for a quick win first
-  index_to_win = ai_choose_play_index plays, "O"
+class Player
   
-  # look for ways the opponent can win
-  index_to_block = ai_choose_play_index plays, "X"
+  def again? # <= nil
+    yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
+    yes_or_no == "Y"
+  end # => Boolean
   
-  if index_to_win
-     plays[index_to_win] = "O"
-     return plays
-  elsif index_to_block
-     plays[index_to_block] = "O"
-     plays
-  else
-     index_of_comp_play = get_playable_indices(plays).sample
-     plays[index_of_comp_play] = "O"
-     return plays
-  end
-end # => Array
-
-def ai_choose_play_index(arr, cursor) # <= Array
-  order = ["D", "H", "V"].shuffle
-
-  order.each do |operation| # shuffle the hierarchy of how the AI thinks. more like playing a human... but a jedi human.
-    case operation
-      when "D"
-        # diagonals
-        dia = [[0,4,8], [2,4,6]]
-        dia.each do |group|
-          found = find_third_index group, arr, cursor
-          return found if found != nil
-        end
-      when "H"
-        # horizontals
-        hor = [[0,1,2], [3,4,5], [6,7,8]]
-        hor.each do |group|
-          found = find_third_index group, arr, cursor
-          return found if found != nil
-        end
-      when "V"
-        # verticals
-        ver = [[0,3,6], [1,4,7], [2,5,8]]
-        ver.each do |group|
-          found = find_third_index group, arr, cursor
-          return found if found != nil
-        end
+  def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
+    input = prompt msg
+    
+    if valid?(input, type)
+      return input.upcase
+    else
+      system("clear")
+      print_ttt_board prev_plays
+      puts "INVALID INPUT: Please try again"
+      input = collect_and_validate_input msg, type, prev_plays
     end
-  end
-  nil
-end # => Integer or nil
-
-def find_third_index(group_arr, plays_arr, cursor) # <= Array
-  available_index = []
-  two_os = []
-  group_arr.each do |index|
-    if plays_arr[index] == cursor
-      two_os << index
-    elsif %w(1 2 3 4 5 6 7 8 9).include? plays_arr[index]
-      available_index << index
+  end # => String
+  
+  def valid?(input, type) # <= String, Symbol
+    if type == :play
+      input =~ /[123456789]/ && input.length == 1
+    elsif type == :again
+      input =~ /[YNyn]/
     end
-  end
-  if two_os.count == 2 && available_index.count == 1
-    return available_index[0]
-  end
-  nil
-end # => Integer or nil
+  end # => Boolean
+  
+  def did_he_win?(arr, player) # <= Array, String
+    if (arr[0] == arr[1] && arr[1] == arr[2] ||
+        arr[3] == arr[4] && arr[4] == arr[5] ||
+        arr[6] == arr[7] && arr[7] == arr[8] ||
+        arr[0] == arr[3] && arr[3] == arr[6] ||
+        arr[1] == arr[4] && arr[4] == arr[7] ||
+        arr[2] == arr[5] && arr[5] == arr[8] ||
+        arr[0] == arr[4] && arr[4] == arr[8] ||
+        arr[2] == arr[4] && arr[4] == arr[6])
+      true
+    elsif game_over? arr
+      puts "It's a TIE!"
+      false
+    end
+  end # => Boolean
+  
+  def prompt(msg) # <= String
+    puts " => #{msg}"
+    gets.chomp
+  end # => String
+end
 
-def print_ttt_board(arr) # <= Array
-  system("clear")
-  puts "Let's Play Tic Tac Toe!"
-  puts "-----------------------"
-  puts ""
-  puts "     |     |     "
-  puts "  #{arr[0]}  |  #{arr[1]}  |  #{arr[2]}  "
-  puts "     |     |     "
-  puts "-----+-----+-----"
-  puts "     |     |     "
-  puts "  #{arr[3]}  |  #{arr[4]}  |  #{arr[5]}  "
-  puts "     |     |     "
-  puts "-----+-----+-----"
-  puts "     |     |     "
-  puts "  #{arr[6]}  |  #{arr[7]}  |  #{arr[8]}  "
-  puts "     |     |     "
-  puts ""
-end # => nil
 
-def prompt(msg) # <= String
-  puts " => #{msg}"
-  gets.chomp
-end # => String
-
-def update_game_plays(arr, player_choice) # <= Array, String
-  here = arr.index(player_choice)
-  arr[here] = "X"
-  arr
-end # => Array
-
-# ====================== Game Logic
+# ============================================================================== Game Logic
 
 begin
   game_plays = %w(1 2 3 4 5 6 7 8 9)

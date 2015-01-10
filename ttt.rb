@@ -18,9 +18,7 @@ require 'pry'
 
 class Board
   
-  @game_plays = %w(1 2 3 4 5 6 7 8 9)
-  
-  def print_ttt_board(arr) # <= Array
+  def self.print_ttt_board(arr) # <= Array
     system("clear")
     puts "Let's Play Tic Tac Toe!"
     puts "-----------------------"
@@ -39,31 +37,16 @@ class Board
     puts ""
   end # => nil
   
-  
-  def update_game_plays(arr, player_choice) # <= Array, String
-    here = arr.index(player_choice)
-    arr[here] = "X"
-    arr
-  end # => Array
-  
 end
 
 class AI
   
-  def get_playable_indices(arr) # <= Array, String
-    indices = []
-    arr.each_with_index do |item, index|
-        indices << index if (item != "X" && item != "O")
-    end
-    indices
-  end # => Array
-  
-  def play_by_computer(plays) # <= Array 
+  def self.play_by_computer(plays) # <= GameEngine.game_plays Array 
     # look for a quick win first
-    index_to_win = ai_choose_play_index plays, "O"
+    index_to_win = AI.ai_choose_play_index plays, "O"
     
     # look for ways the opponent can win
-    index_to_block = ai_choose_play_index plays, "X"
+    index_to_block = AI.ai_choose_play_index plays, "X"
     
     if index_to_win
        plays[index_to_win] = "O"
@@ -72,13 +55,23 @@ class AI
        plays[index_to_block] = "O"
        plays
     else
-       index_of_comp_play = get_playable_indices(plays).sample
+       index_of_comp_play = AI.get_playable_indices(plays).sample
        plays[index_of_comp_play] = "O"
        return plays
     end
   end # => Array
   
-  def ai_choose_play_index(arr, cursor) # <= Array
+  private
+  
+  def self.get_playable_indices(arr) # <= Array, String
+    indices = []
+    arr.each_with_index do |item, index|
+        indices << index if (item != "X" && item != "O")
+    end
+    indices
+  end # => Array
+  
+  def self.ai_choose_play_index(arr, cursor) # <= Array
     order = ["D", "H", "V"].shuffle
   
     order.each do |operation| # shuffle the hierarchy of how the AI thinks. more like playing a human... but a jedi human.
@@ -87,21 +80,21 @@ class AI
           # diagonals
           dia = [[0,4,8], [2,4,6]]
           dia.each do |group|
-            found = find_third_index group, arr, cursor
+            found = AI.find_third_index group, arr, cursor
             return found if found != nil
           end
         when "H"
           # horizontals
           hor = [[0,1,2], [3,4,5], [6,7,8]]
           hor.each do |group|
-            found = find_third_index group, arr, cursor
+            found = AI.find_third_index group, arr, cursor
             return found if found != nil
           end
         when "V"
           # verticals
           ver = [[0,3,6], [1,4,7], [2,5,8]]
           ver.each do |group|
-            found = find_third_index group, arr, cursor
+            found = AI.find_third_index group, arr, cursor
             return found if found != nil
           end
       end
@@ -109,7 +102,7 @@ class AI
     nil
   end # => Integer or nil
   
-  def find_third_index(group_arr, plays_arr, cursor) # <= Array
+  def self.find_third_index(group_arr, plays_arr, cursor) # <= Array
     available_index = []
     two_os = []
     group_arr.each do |index|
@@ -128,43 +121,46 @@ end
 
 class GameEngine
   
-  def game_over?(arr) # <= Array
-    arr.each do |x|
+  attr_accessor :players_turn
+  
+  def initialize
+    @players_turn = nil
+    @game_plays = %w(1 2 3 4 5 6 7 8 9)
+    first_play_of_game
+  end
+  
+  def update_game_plays(player_choice) # <= @game_plays Array, String
+    here = @game_plays.index(player_choice)
+    @game_plays[here] = "X"
+    @game_plays
+  end # => Array
+  
+  def game_over? # <= @game_plays Array
+    @game_plays.each do |x|
         return false if %w(1 2 3 4 5 6 7 8 9).include? x
     end
     true
   end # => Boolean
-end
-
-class Player
   
-  def again? # <= nil
-    yes_or_no = collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
-    yes_or_no == "Y"
-  end # => Boolean
-  
-  def collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
-    input = prompt msg
+  def first_play_of_game
+    Board.print_ttt_board @game_plays
     
-    if valid?(input, type)
-      return input.upcase
+    if rand(2) == 1
+      # The computer wins the coinflip and plays first
+      @game_plays = AI.play_by_computer @game_plays
+      Board.print_ttt_board @game_plays
+      @players_turn = true
     else
-      system("clear")
-      print_ttt_board prev_plays
-      puts "INVALID INPUT: Please try again"
-      input = collect_and_validate_input msg, type, prev_plays
+      puts "You won the coinflip and get to play first!"
+      puts "\nYou have X and the computer has O\n\n"
+      player_choice = Player.collect_and_validate_input "Choose a Place to Play Your X", :play, @game_plays
+      update_game_plays player_choice
+      Board.print_ttt_board @game_plays
+      @players_turn = false
     end
-  end # => String
+  end
   
-  def valid?(input, type) # <= String, Symbol
-    if type == :play
-      input =~ /[123456789]/ && input.length == 1
-    elsif type == :again
-      input =~ /[YNyn]/
-    end
-  end # => Boolean
-  
-  def did_he_win?(arr, player) # <= Array, String
+  def did_he_win?(arr) # <= Array, String
     if (arr[0] == arr[1] && arr[1] == arr[2] ||
         arr[3] == arr[4] && arr[4] == arr[5] ||
         arr[6] == arr[7] && arr[7] == arr[8] ||
@@ -174,13 +170,69 @@ class Player
         arr[0] == arr[4] && arr[4] == arr[8] ||
         arr[2] == arr[4] && arr[4] == arr[6])
       true
-    elsif game_over? arr
+    elsif game_over?
       puts "It's a TIE!"
       false
     end
   end # => Boolean
   
-  def prompt(msg) # <= String
+  def player_take_turn
+    gameover = false
+    player_choice = Player.collect_and_validate_input " Your turn!", :play, @game_plays
+    update_game_plays player_choice
+    Board.print_ttt_board @game_plays
+    if did_he_win? @game_plays
+      puts " => YOU WON!!"
+      gameover = true
+    end
+    @players_turn = false unless gameover == true
+    gameover
+  end # => Boolean
+  
+  def computer_take_turn
+    gameover = false
+    @game_plays = AI.play_by_computer @game_plays
+    Board.print_ttt_board @game_plays
+    if did_he_win? @game_plays
+      puts " => Oh no! The computer wins!"
+      gameover = true
+    end
+    @players_turn = true unless gameover == true
+    gameover
+  end # => Boolean
+  
+  def again? # <= nil
+    yes_or_no = Player.collect_and_validate_input("Care to play again? Y/N", :again, %w(o o o x x x o o o))
+    yes_or_no == "Y"
+  end # => Boolean
+end
+
+class Player
+  
+  def self.collect_and_validate_input(msg, type, prev_plays) # <= String, Symbol, Array
+    input = Player.prompt msg
+    
+    if Player.valid?(input, type)
+      return input.upcase
+    else
+      system("clear")
+      print_ttt_board prev_plays
+      puts "INVALID INPUT: Please try again"
+      input = collect_and_validate_input msg, type, prev_plays
+    end
+  end # => String
+  
+  private
+  
+  def self.valid?(input, type) # <= String, Symbol
+    if type == :play
+      input =~ /[123456789]/ && input.length == 1
+    elsif type == :again
+      input =~ /[YNyn]/
+    end
+  end # => Boolean
+  
+  def self.prompt(msg) # <= String
     puts " => #{msg}"
     gets.chomp
   end # => String
@@ -190,44 +242,20 @@ end
 # ============================================================================== Game Logic
 
 begin
-  game_plays = %w(1 2 3 4 5 6 7 8 9)
+
+game = GameEngine.new
+
   
-  print_ttt_board game_plays
-  
-  if rand(2) == 1
-    # The computer wins the coinflip and plays first
-    game_plays = play_by_computer game_plays
-    print_ttt_board game_plays
-    players_turn = true
-  else
-    puts "You won the coinflip and get to play first!"
-    puts "\nYou have X and the computer has O\n\n"
-    player_choice = collect_and_validate_input "Choose a Place to Play Your X", :play, game_plays
-    game_plays = update_game_plays game_plays, player_choice
-    print_ttt_board game_plays
-    players_turn = false
-  end
-  
-  while !game_over? game_plays do
-    if players_turn
-      player_choice = collect_and_validate_input " Your turn!", :play, game_plays
-      game_plays = update_game_plays game_plays, player_choice
-      print_ttt_board game_plays
-      if did_he_win? game_plays, "The Computer"
-        puts " => YOU WON!!"
-        break
-      end
-      players_turn = false
+  while !game.game_over? do
+    if game.players_turn
+      gameover = game.player_take_turn
+      break if gameover
     else
-      game_plays = play_by_computer game_plays
-      print_ttt_board game_plays
-      if did_he_win? game_plays, "You"
-        puts " => Oh no! The computer wins!"
-        break
-      end
-      players_turn = true
+      gameover = game.computer_take_turn
+      break if gameover
     end
   end 
   
-end while again?
+end while game.again?
+
 puts "Thanks for Playing!"
